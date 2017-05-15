@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+	<html>
+	<head>
+		<title></title>
+	</head>
+	<style>
+		.highlight{
+			color: red;
+		}
+	</style>
+	<body ng-app="myApp">
+		<tab>
+			<pane title="school">
+				<h4>School content</h4>
+			</pane>
+			<pane title="country">
+				<h4>country content</h4>
+			</pane>
+		</tab>
+	
+
+
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+		<script>
+			angular.module('myApp', []);
+			angular.module('myApp')
+					.component('tab', {
+						transclude: true,
+						controller: tabCtrl,
+						//highlight class will be added to the 'list' element when 'pane.selected' is true
+						template: '<div>'+
+
+									'<ul>' + 
+										'<li ng-repeat="pane in $ctrl.panes"><a href ng-click="$ctrl.onSelect(pane)" ng-class="{highlight:pane.selected}">{{pane.title}}</a></li>' +
+									'</ul>' +
+
+									'<div ng-transclude></div>' +
+
+								   '</div>'
+					})
+					.component('pane', {
+						transclude: true,
+						bindings: {
+							title: '@'
+						},
+						require: {
+							tabCtrl: '^tab'
+						},
+						controller: paneCtrl,
+						template: '<div ng-transclude ng-show="$ctrl.selected"></div>'
+					});
+
+					function tabCtrl(){
+						var panes = this.panes = [];
+						this.addPane = function(pane){
+							//if the incoming pane is the first pane, then show it on the screen by making 'pane.selected = true'
+							if(panes.length === 0) pane.selected = true;
+							//if the incoming pane is not the first one then dont show it
+							else pane.selected = false;
+
+							//after deciding to show the pane or not, push the pane into 'panes array'
+							panes.push(pane);
+						};
+
+						this.onSelect = function(pane){
+							//on clicking the title, the clicked pane's content should appear, for that initially make all the panes which are in the array 'panes' 'selected' value to false, then make the incoming 'pane' (the clicked one) selected value to true.
+							panes.forEach(function(pane, index){
+								pane.selected = false;
+							});
+							pane.selected = true;
+						};
+					}
+
+					function paneCtrl(){
+						//on initialization of this template,
+						this.$onInit = function(){
+							//on each initialisation of tab, call 'addPane'
+							this.tabCtrl.addPane(this);	
+						};
+					}
+		</script>
+	</body>
+</html>
